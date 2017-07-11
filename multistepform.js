@@ -15,19 +15,19 @@ $.fn.multistepform = function(options) {
     var settings = $.extend( {}, defaults, options );
 
     return this.each(function(idx, form) {
-        let $form = $(form);
-        let $steps = $form.find('.step');
-        let $back = $form.find('.step-back');
-        let $next = $form.find('.step-next');
-        let $finish = $form.find('.step-finish');
-        let $progressBar = $form.find('.progress-bar');
-        let $step = 0;
-        let $maxSteps = $steps.length;
+        var $form = $(form);
+        var $steps = $form.find('.step');
+        var $back = $form.find('.step-back');
+        var $next = $form.find('.step-next');
+        var $finish = $form.find('.step-finish');
+        var $progressBar = $form.find('.progress-bar');
+        var $step = 0;
+        var $maxSteps = $steps.length;
 
 
         function disableButtons() {
             $back.prop('disabled', ($step <= 0));
-            $next.prop('disabled', ($step >= $steps.length-1));
+            $next.toggle($step < $steps.length-1);
             $finish.toggle($step === $steps.length-1);
         }
 
@@ -49,12 +49,16 @@ $.fn.multistepform = function(options) {
 
 
         function updateProgressBar() {
-            let width = 100 * (($step+1)/$maxSteps);
+            var width = 100 * (($step+1)/$maxSteps);
             $progressBar.width(width + '%');
             $progressBar.text('Step ' + ($step + 1) + ' of ' + $maxSteps);
         }
 
         function update() {
+            var inputElements = $($steps[$step]).find("input");
+            if (inputElements.length > 0) {
+                inputElements.first().focus();
+            }
             disableButtons();
             updateProgressBar();
             if ($step === $maxSteps-1) {
@@ -64,7 +68,6 @@ $.fn.multistepform = function(options) {
 
         function init() {
             $steps.hide();
-            console.log($steps);
             $($steps[0]).show();
 
             $back.click(function() {
@@ -83,6 +86,18 @@ $.fn.multistepform = function(options) {
             update();
         }
         init();
+
+        $(document).on("keypress", $form, function(event) {
+            if (event.keyCode === 13) {
+                if ($step < $maxSteps - 1) {
+                    console.log('kut');
+                    event.preventDefault();
+                    $next.click();
+                } else {
+                    $finish.click();
+                }
+            }
+        });
     });
 
 };
